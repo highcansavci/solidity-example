@@ -116,10 +116,10 @@ contract KeySharing {
         return _coords;
     }
     
-    function generatePrivKey(uint32 _catId) public view returns(uint256) {
+    function generatePrivKey(uint32 _catId) public returns(uint256) {
         uint16 age = CatMap[_catId].ageDaily;
         uint16 durable = CatMap[_catId].durability;
-        return uint256(keccak256(abi.encode(age ** durable)));
+        PrivKeyMap[_catId] =  uint256(keccak256(abi.encode(age ** durable)));
     }
     
     function exchangeKeys(uint32 _catId, uint32 _otherCatId) public {
@@ -140,14 +140,12 @@ contract KeySharing {
         
         // If the both kittens are broke, then they share the place of the food.
         if(first_kitten.amountMeal < first_kitten.amountAte || second_kitten.amountMeal < second_kitten.amountAte) {
-            uint256 first_pk = generatePrivKey(_catId);
-            uint256 second_pk = generatePrivKey(_otherCatId);
-            PrivKeyMap[_catId] = first_pk;
-            PrivKeyMap[_otherCatId] = second_pk;
+            generatePrivKey(_catId);
+            generatePrivKey(_otherCatId);
             generateCommonPoint(_catId, _otherCatId);
             exchangeKeys(_catId, _otherCatId);
-            (first_gx, first_gy) = EllipticCurve.ecMul(first_pk, OtherPubKeyMap[_catId].GX, OtherPubKeyMap[_catId].GY, AA, PP);
-            (second_gx, second_gy) = EllipticCurve.ecMul(second_pk, OtherPubKeyMap[_otherCatId].GX, OtherPubKeyMap[_otherCatId].GY, AA, PP);
+            (first_gx, first_gy) = EllipticCurve.ecMul(PrivKeyMap[_catId], OtherPubKeyMap[_catId].GX, OtherPubKeyMap[_catId].GY, AA, PP);
+            (second_gx, second_gy) = EllipticCurve.ecMul(PrivKeyMap[_otherCatId], OtherPubKeyMap[_otherCatId].GX, OtherPubKeyMap[_otherCatId].GY, AA, PP);
             // They must obtain the shared key to continue.
             require(first_gx == second_gx && first_gy == second_gy);
             findMeal(_catId, 10000);
