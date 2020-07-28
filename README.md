@@ -1,5 +1,6 @@
 # solidity-example
-A smart contract example to make two kittens share their food stash location.  
+A smart contract example to make two kittens share their food stash location.   
+Works in 0.6.2 version of Solidity compiler.  
 Solidity implementation of the ECC algorithm is taken from:  
 https://github.com/witnet/elliptic-curve-solidity/blob/master/contracts/EllipticCurve.sol.   
 Solidity implementation of Ownable.sol Contract is taken from:  
