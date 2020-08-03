@@ -63,15 +63,36 @@ contract Pedersen {
         return EllipticCurve.ecAdd(_rz.gx, _rz.gy, _rk.gx, _rk.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
-    //   commit to a value _value
-    //   _r - private Key used as blinding factor
-    //   H - the point on the curve generated from shared point g
+    /**
+     * Simulation of the Pedersen Commitment
+     * 
+     * @param  _gx - X coordinate of the shared ECC point 
+     * @param  _gy - Y coordinate of the shared ECC point 
+     * @param  _Hx - X coordinate of the secondary generated point 
+     * @param  _Hy - Y coordinate of the secondary generated point 
+     * @param  _r - blinding factor private key used to create the commitment
+     * @param  _value - original value committed to
+     * @return The Commitment Point
+     */
     function commitTo(uint256 _gx, uint256 _gy, uint256 _Hx, uint256 _Hy, uint256 _r, uint256 _value) public view isOnCurve(_gx, _gy, msg.sender) returns(uint256, uint256) {
         (uint256 rz_x, uint256 rz_y) =  EllipticCurve.ecMul(_r, _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         (uint256 rk_x, uint256 rk_y) =  EllipticCurve.ecMul(_value, _Hx, _Hy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         return EllipticCurve.ecAdd(rz_x, rz_y, rk_x, rk_y, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
+    /**
+     * Verification of the Pedersen Commitment
+     * 
+     * @param  _gx - X coordinate of the shared ECC point 
+     * @param  _gy - Y coordinate of the shared ECC point 
+     * @param  _Hx - X coordinate of the secondary generated point 
+     * @param  _Hy - Y coordinate of the secondary generated point 
+     * @param  _commitX - X coordinate of the commitment 
+     * @param  _commitY - Y coordinate of the commitment 
+     * @param  _r - blinding factor private key used to create the commitment
+     * @param  _value - original value committed to
+     * @return Whether it is committed transaction or not
+     */
     function verify(uint256 _gx, uint256 _gy, uint256 _Hx, uint256 _Hy, uint256 _commitX, uint256 _commitY, uint256 _r, uint256 _value) public view isOnCurve(_gx, _gy, msg.sender) returns(bool) {
         (uint256 c_x, uint256 c_y) = commitTo(_gx, _gy, _Hx, _Hy, _r, _value);
         return c_x == _commitX && c_y == _commitY;
