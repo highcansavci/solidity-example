@@ -167,6 +167,7 @@ contract KeySharing {
             first_kitten.amountMeal -= sharedFood;
             second_kitten.amountMeal += sharedFood;
         }
+        require(first_kitten.amountMeal > first_kitten.amountAte && second_kitten.amountMeal > second_kitten.amountAte);
         eatMeal(_catId);
         eatMeal(_otherCatId);
     }
