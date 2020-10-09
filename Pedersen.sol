@@ -35,53 +35,53 @@ contract Pedersen {
         return EllipticCurve.ecMul(generateRandom(), _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
-    function generateHKnown(uint256 _r, uint256 _gx, uint256 _gy) public view isOnCurve(_gx, _gy, msg.sender) returns(uint256, uint256)  {
-        return EllipticCurve.ecMul(_r, _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+    function generateHKnown(uint256 _s, uint256 _gx, uint256 _gy) public view isOnCurve(_gx, _gy, msg.sender) returns(uint256, uint256)  {
+        return EllipticCurve.ecMul(_s, _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
     //   add two known values with blinding factors
     //   and compute the committed value
-    //   add rX + rY (blinding factor private keys)
+    //   add sX + sY (blinding factor private keys)
     //   add vX + vY (hidden values)
-    function addPrivately(GPoint memory _g,  GPoint memory _H, uint256 _rx, uint256 _ry, uint256 _vx, uint256 _vy) public view isOnCurve(_g.gx, _g.gy, msg.sender) returns(uint256, uint256) {
+    function addPrivately(GPoint memory _g,  GPoint memory _H, uint256 _sx, uint256 _sy, uint256 _vx, uint256 _vy) public view isOnCurve(_g.gx, _g.gy, msg.sender) returns(uint256, uint256) {
         GPoint memory _rz;
         GPoint memory _rk;
-        (_rz.gx, _rz.gy)=  EllipticCurve.ecMul(_rx + _ry, _g.gx, _g.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
-        (_rk.gx, _rk.gy) =  EllipticCurve.ecMul(_vx + _vy, _H.gx, _H.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+        (_rz.gx, _rz.gy)=  EllipticCurve.ecMul(_sx + _sy, _g.gx, _g.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+        (_rk.gx, _rk.gy) =  EllipticCurve.ecMul(_sx + _sy, _H.gx, _H.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         return EllipticCurve.ecAdd(_rz.gx, _rz.gy, _rk.gx, _rk.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
     //   subtract two known values with blinding factors
     //   and compute the committed value
-    //   add rX - rY (blinding factor private keys)
+    //   add sX - sY (blinding factor private keys)
     //   add vX - vY (hidden values)
-    function subPrivately(GPoint memory _g,  GPoint memory _H, uint256 _rx, uint256 _ry, uint256 _vx, uint256 _vy) public view isOnCurve(_g.gx, _g.gy, msg.sender) returns(uint256, uint256) {
+    function subPrivately(GPoint memory _g,  GPoint memory _H, uint256 _sx, uint256 _sy, uint256 _vx, uint256 _vy) public view isOnCurve(_g.gx, _g.gy, msg.sender) returns(uint256, uint256) {
         GPoint memory _rz;
         GPoint memory _rk;
-        (_rz.gx, _rz.gy)=  EllipticCurve.ecMul(_rx - _ry, _g.gx, _g.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+        (_rz.gx, _rz.gy)=  EllipticCurve.ecMul(_sx - _sy, _g.gx, _g.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         (_rk.gx, _rk.gy) =  EllipticCurve.ecMul(_vx - _vy, _H.gx, _H.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         return EllipticCurve.ecAdd(_rz.gx, _rz.gy, _rk.gx, _rk.gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
     /**
-     * Simulation of the Pedersen Commitment
+     * Commit Phase of the Pedersen Commitment
      * 
      * @param  _gx - X coordinate of the shared ECC point 
      * @param  _gy - Y coordinate of the shared ECC point 
      * @param  _Hx - X coordinate of the secondary generated point 
      * @param  _Hy - Y coordinate of the secondary generated point 
-     * @param  _r - blinding factor private key used to create the commitment
+     * @param  _r - blinding factor random key used to create the commitment
      * @param  _value - original value committed to
-     * @return The Commitment Point
+     * @return The Commit Phase
      */
     function commitTo(uint256 _gx, uint256 _gy, uint256 _Hx, uint256 _Hy, uint256 _r, uint256 _value) public view isOnCurve(_gx, _gy, msg.sender) returns(uint256, uint256) {
-        (uint256 rz_x, uint256 rz_y) =  EllipticCurve.ecMul(_r, _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
-        (uint256 rk_x, uint256 rk_y) =  EllipticCurve.ecMul(_value, _Hx, _Hy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+        (uint256 rz_x, uint256 rz_y) =  EllipticCurve.ecMul(_value, _gx, _gy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
+        (uint256 rk_x, uint256 rk_y) =  EllipticCurve.ecMul(_r, _Hx, _Hy, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
         return EllipticCurve.ecAdd(rz_x, rz_y, rk_x, rk_y, ECurveMap[msg.sender].eca, ECurveMap[msg.sender].prime);
     }
     
     /**
-     * Verification of the Pedersen Commitment
+     * Reveal Phase of the Pedersen Commitment
      * 
      * @param  _gx - X coordinate of the shared ECC point 
      * @param  _gy - Y coordinate of the shared ECC point 
@@ -89,7 +89,7 @@ contract Pedersen {
      * @param  _Hy - Y coordinate of the secondary generated point 
      * @param  _commitX - X coordinate of the commitment 
      * @param  _commitY - Y coordinate of the commitment 
-     * @param  _r - blinding factor private key used to create the commitment
+     * @param  _r - blinding factor random key used to create the commitment
      * @param  _value - original value committed to
      * @return Whether it is committed transaction or not
      */
